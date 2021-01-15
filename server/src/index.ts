@@ -8,19 +8,28 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { UserResolver } from "./resolvers/userResolver";
 import { StationResolver } from "./resolvers/station";
-import cors from "cors";
+import bodyParser from "body-parser";
 // import { mongoDbConnectionString } from "./types";
 
 (async () => {
   //applying cors for security concerns
   const app = express();
-  app.use(
-    cors({
-      origin: "http://localhost:3000",
-      credentials: false,
-      allowedHeaders: "*",
-    })
-  );
+  app.use(bodyParser.json());
+
+  app.use((req: any, res: any, next?) => {
+    res.setHeader("Access-Control-Allow-Origin", "*")!;
+    res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS")!;
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type",
+      "application/json"
+    )!;
+
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+    }
+    next();
+  });
 
   //protecting database and server
 

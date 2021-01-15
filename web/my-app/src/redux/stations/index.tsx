@@ -65,7 +65,7 @@ const stationSlice = createSlice({
         findStation.stationType === payload.stationType;
       }
     },
-    remove: (state, { payload }: PayloadAction<iStation>) => {
+    remove: (state, { payload }) => {
       const findStation = state.findIndex(
         (station) => station.stationId === payload.stationId
       );

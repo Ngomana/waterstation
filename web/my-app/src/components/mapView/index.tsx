@@ -10,6 +10,7 @@ import { iStation, iStationArray } from "../../types/stations";
 import {
   addStationAction,
   api,
+  deleteStationAction,
   getStations,
   query,
 } from "../../redux/stations";
@@ -17,7 +18,7 @@ import {
 const MapView = ({ children }: any) => {
   const [showInfo, setShowInfo] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [statioId, setStationId] = useState(0);
+  const [stationId, setStationId] = useState(0);
   const [latitude, setLatitude] = useState(0);
 
   const [longitude, setLongitude] = useState(0);
@@ -35,12 +36,28 @@ const MapView = ({ children }: any) => {
 
   const dispatch = useDispatch();
 
+  const onCancelHandler = () => {
+    setShowInfo(false);
+    setShowEdit(false);
+    setAddStation(false);
+    setStationType("");
+    setCapacity(0);
+    setLatitude(0);
+    setLongitude(0);
+    setStationId(0);
+  };
+
   const createStation = () => {
-    const newStationId = "";
+    const newStationId = Math.max(
+      ...locations.map((docNum) => docNum.stationId),
+      1
+    );
+
+    console.log(newStationId);
     const query = `
     mutation {
       createStation(
-        stationId: ${newStationId}
+        stationId: ${newStationId + 1}
         capacity: ${capacity}
         stationType: "${stationType}"
         latitude: ${latitude}
@@ -58,6 +75,8 @@ const MapView = ({ children }: any) => {
     `;
 
     try {
+      onCancelHandler();
+
       fetch("http://localhost:8000/graphql", {
         method: "POST",
         body: JSON.stringify({ query }),
@@ -70,7 +89,7 @@ const MapView = ({ children }: any) => {
 
       dispatch(
         addStationAction({
-          stationId: parseFloat(newStationId),
+          stationId: newStationId,
           location: {
             latitude: latitude,
             longitude: longitude,
@@ -85,9 +104,76 @@ const MapView = ({ children }: any) => {
     }
   };
 
-  const updateStation = () => {};
+  const updateStation = () => {
+    const query = `
+    mutation {
+      updateStation(
+        stationId: 1
+        capacity: 7700
+        stationType: "Fuck Angela"
+        latitude: "black"
+        longitude: "a black man will always loss"
+      ) {
+        stationId
+        location {
+          longitude
+          latitude
+        }
+        stationType
+        capacity
+      }
+    }
+    `;
 
-  const deleteStation = () => {};
+    try {
+      fetch("http://localhost:8000/graphql", {
+        method: "POST",
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((res) => {
+        console.log(res);
+      });
+
+      dispatch(
+        addStationAction({
+          stationId: stationId,
+          location: {
+            latitude: latitude,
+            longitude: longitude,
+          },
+          stationType: stationType,
+          capacity: capacity,
+        })
+      );
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  const deleteStation = () => {
+    const query = `
+    mutation{
+      deleteStation(stationId: ${stationId})
+    }
+    `;
+
+    try {
+      fetch("http://localhost:8000/graphql", {
+        method: "POST",
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((res) => {
+        console.log(res);
+      });
+
+      dispatch(deleteStationAction({ stationId: stationId }));
+    } catch (error) {}
+  };
 
   const onChangeLatitude = (e: any) => {
     const value = parseFloat(e.target.value);
@@ -212,7 +298,8 @@ const MapView = ({ children }: any) => {
               <div>
                 <select
                   onChange={(e) => {
-                    console.log(e.target.value);
+                    const value = e.target.value;
+                    setStationType(value);
                   }}
                 >
                   <option value="">Select Station Type</option>
@@ -224,10 +311,15 @@ const MapView = ({ children }: any) => {
                     );
                   })}
                 </select>
-                <input type="input" placeholder="Station Capacity" />
+                <input
+                  type="input"
+                  placeholder="Station Capacity"
+                  value={capacity.toString()}
+                  onChange={onChangeCapacity}
+                />
 
                 <div>
-                  <button>Add</button>
+                  <button onClick={createStation}>Add</button>
                 </div>
               </div>
             </InfoWindow>
@@ -297,17 +389,30 @@ const MapView = ({ children }: any) => {
                           );
                         })}
                       </select>
-                      <input type="text" placeholder="Station Capacity" />
-                      <input type="text" placeholder="Latitude" />
-                      <input type="text" placeholder="Longitude" />
-                      <button>Save</button>
-                      <button>Cancel</button>
+                      <input
+                        type="text"
+                        placeholder="Station Capacity"
+                        value={capacity}
+                        onChange={onChangeCapacity}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Latitude"
+                        value={latitude}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Longitude"
+                        value={longitude}
+                      />
+                      <button onClick={updateStation}>Save</button>
+                      <button onClick={onCancelHandler}>Cancel</button>
                     </div>
                   ) : (
                     <div>
                       <div>
                         <h2>Water Station</h2>
-                        <h3>{`Station ID: ${statioId}`}</h3>
+                        <h3>{`Station ID: ${stationId}`}</h3>
                         <p>{`Station Type: ${stationType}`}</p>
                         <p>{`Station Capacity ${capacity}`}</p>
                         <p>{`Latitude: ${latitude}`}</p>
@@ -315,7 +420,7 @@ const MapView = ({ children }: any) => {
                       </div>
 
                       <div>
-                        <button>Delete</button>
+                        <button onClick={deleteStation}>Delete</button>
                         <button
                           onClick={() => {
                             setShowEdit(true);
