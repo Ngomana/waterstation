@@ -5,11 +5,11 @@ import { Field, ObjectType } from "type-graphql";
 export class Destination {
   @Field()
   @Property({ required: true })
-  longitude: string;
+  longitude: number;
 
   @Field()
   @Property({ required: true })
-  latitude: string;
+  latitude: number;
 }
 
 export const DestinationModal = getModelForClass(Destination);

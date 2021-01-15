@@ -8,32 +8,31 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { UserResolver } from "./resolvers/userResolver";
 import { StationResolver } from "./resolvers/station";
+import cors from "cors";
 // import { mongoDbConnectionString } from "./types";
 
 (async () => {
   //applying cors for security concerns
   const app = express();
-  //   app.use(
-  //     cors({
-  //       origin: "http://localhost:4000",
-  //       credentials: true,
-  //     })
-  //   );
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: false,
+      allowedHeaders: "*",
+    })
+  );
 
   //protecting database and server
 
   //connection to database
   try {
     const port = 8000;
-    await connect(
-      "mongodb+srv://tony:213580@numberscloud.fak0z.mongodb.net/test?retryWrites=true&w=majority",
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        dbName: "Water",
-        useFindAndModify: false,
-      }
-    );
+    await connect(process.env.MONGODB_URI!, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: "Water",
+      useFindAndModify: false,
+    });
 
     //connection to server side
     const apolloServer = new ApolloServer({
@@ -51,7 +50,7 @@ import { StationResolver } from "./resolvers/station";
 
     app.listen(port, () => {
       console.log(
-        `Apollo server & mongodb running on port http://localhost:${port}`
+        `Apollo server & mongodb running on port http://localhost:${port}/graphql`
       );
     });
   } catch (error) {

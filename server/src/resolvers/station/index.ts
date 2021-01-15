@@ -22,8 +22,8 @@ export class StationResolver {
   async updateStation(
     //paramaters
     @Arg("stationId") stationId: number,
-    @Arg("longitude") longitude: string,
-    @Arg("latitude") latitude: string,
+    @Arg("longitude") longitude: number,
+    @Arg("latitude") latitude: number,
     @Arg("stationType") stationType: string,
     @Arg("capacity") capacity: number
   ) {
@@ -98,8 +98,8 @@ export class StationResolver {
     //paramaters
 
     @Arg("stationId") stationId: number,
-    @Arg("longitude") longitude: string,
-    @Arg("latitude") latitude: string,
+    @Arg("longitude") longitude: number,
+    @Arg("latitude") latitude: number,
     @Arg("stationType") stationType: string,
     @Arg("capacity") capacity: number
   ): Promise<Station> {
